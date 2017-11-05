@@ -13,6 +13,9 @@
 
 gpcc_geisterからコピー、三好さんのサーバーに接続して対戦できることが確認済みのもの。
 
+### pomcp.py
+
+reinforcement_learningからコピー。サーバとの接続をしないPOMCPの実装。
 
 
 
