@@ -412,8 +412,8 @@ class PartiallyObservableAI(AI):
         return self.core.choice(ghosts)
 
 
-DefaultAI = FastestColorblindAI
-
+DefaultAI = PartiallyObservableAI
+Sub = FastestColorblindAI  # substitute player
 
 class EpsilonFastestAI(AI):
     "epsilon greedy"

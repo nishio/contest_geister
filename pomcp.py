@@ -1,8 +1,8 @@
 from time import time
 from random import choice, random, shuffle
-import tiger
 import numpy as np
 from collections import Counter, defaultdict
+import geister
 
 from random import seed
 seed(1234)
@@ -13,14 +13,13 @@ try:
 except:
     profile = lambda f:f
 
-TIME_LIMIT = 1
+TIME_LIMIT = 1  # seconds
 DEPTH_LIMIT = 100
 tree = {}
 gamma = 0.95
 
 
 
-import geister_simlator as geister
 class GeisterSimulator(object):
     def __init__(self, op_policy=geister.Random()):
         self.op_policy = op_policy
