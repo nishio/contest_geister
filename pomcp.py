@@ -19,37 +19,8 @@ tree = {}
 gamma = 0.95
 
 
-class TigerSimulator(object):
-    def sample_from_initial_states(self):
-        return choice([0, 1])
 
-    def n_init(self, h, a):
-        return 0
-
-    def v_init(self, h, a):
-        return 0.0
-
-    def available_actions(self, s):
-        return [0, 1, 2]
-
-    @profile
-    def step(self, s, a):
-        p = tiger.transition[s, a]
-        #s2 = np.random.choice(len(tiger.states), p=p)
-        s2 = p.cumsum().searchsorted(random())
-        p = tiger.observation[s2, a]
-        #o = np.random.choice(len(tiger.states), p=p)
-        o = p.cumsum().searchsorted(random())
-        r = tiger.reward[s, a]
-        r = (r + 100.0) / 110.0
-        return (s2, o, r)
-
-    def make_new_history(self, h, a, o):
-        return (h, a, o)
-
-import sys
-sys.path.insert(0, '../gpcc_geister/')
-import ex1 as geister
+import geister_simlator as geister
 class GeisterSimulator(object):
     def __init__(self, op_policy=geister.Random()):
         self.op_policy = op_policy
@@ -108,7 +79,6 @@ class GeisterSimulator(object):
     def _serialize_o(self, o):
         return (tuple(o.me), tuple(sorted(o.alive)), o.dead_blue, o.dead_red)
 
-#sim = TigerSimulator()
 sim = GeisterSimulator(geister.Fastest())
 
 class TreeNode(object):
@@ -269,6 +239,4 @@ class POMCP(geister.AI):
 
 #print Counter(geister.match(POMCP, geister.Fastest, False) for i in range(100))
 #print Counter(geister.match(geister.FastestP, POMCP, False) for i in range(100))
-print Counter(geister.match(geister.Random, POMCP, False) for i in range(100))
-
-
+#print Counter(geister.match(geister.Random, POMCP, False) for i in range(100))
