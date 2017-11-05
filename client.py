@@ -590,5 +590,6 @@ if __name__ == "__main__":
         run_player()
         connect_server(HumanPlayer, 10001)
     else:
+        # run miyo's Java UI for human player
         run_miyo_human_player()
         connect_server()
