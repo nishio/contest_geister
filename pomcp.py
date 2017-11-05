@@ -196,14 +196,6 @@ def show(h):
     print tree[h].show_actions()
 
 
-#if 'Geister':
-#    g = geister.Game()
-#    sim.initial_observation = g.to_view(0)
-
-#print search(None)
-#print tree[None].num
-#print tree[None].show_actions()
-
 class POMCP(geister.AI):
     def __init__(self):
         tree.clear()

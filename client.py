@@ -398,6 +398,20 @@ class FastestColorblindAI(AI):
             dist = calc_dist(newpos)
             scored_moves[dist].append(move)
         return choice(scored_moves[min(scored_moves)])
+
+
+class PartiallyObservableAI(AI):
+    def choose_red_ghosts(self):
+        from pomcp import POMCP
+        self.core = POMCP()
+
+        reds = choose_four_red_ghosts_randomly()
+        return reds
+
+    def choose_next_move(self, ghosts):
+        return self.core.choice(ghosts)
+
+
 DefaultAI = FastestColorblindAI
 
 
