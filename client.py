@@ -228,8 +228,8 @@ def connect_server(ai=None, port=None):
                 move = p.handle_NG()
                 msg = "MOV:{}\r\n".format(move_to_str(move))
                 s.send(msg)
-
-            assert any(data.startswith(x) for x in ["WON", "LST", "DRW"])
+            print repr(data)
+            #assert any(data.startswith(x) for x in ["WON", "LST", "DRW"])
             if True:
                 print data[:3]
             break
@@ -240,6 +240,7 @@ def connect_server(ai=None, port=None):
         ghosts = message_to_ghosts(msg)
         move = p.choose_next_move(ghosts)
         msg = "MOV:{}\r\n".format(move_to_str(move))
+        print msg
         s.send(msg)
     s.close()
 

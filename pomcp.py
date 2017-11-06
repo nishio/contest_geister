@@ -83,6 +83,14 @@ class GeisterSimulator(object):
     def available_actions(self, s):
         g = geister.Game.by_val(0, *s)
         moves = geister.find_possible_move(g.to_view(0))
+        if len(moves) == 1 and moves[0][1] == 'WIN':
+            # 適切な方向への移動に置きかえる
+            j = moves[0][0]
+            if g.me[j] == 0:
+                return [[j, -1]]
+            else:
+                return [[j, 1]]
+
         return moves
 
     @profile
