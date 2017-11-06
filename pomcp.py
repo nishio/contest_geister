@@ -22,6 +22,8 @@ gamma = 0.95
 
 def pos_tuple_to_int(pos):
     x, y = pos
+    if pos == (9, 9):
+        return geister.IS_DEAD
     return y * 6 + x
 
 class GeisterSimulator(object):
@@ -42,14 +44,19 @@ class GeisterSimulator(object):
         for i, x in enumerate(op_ghosts):
             if x.color == 'r':
                 j = red.pop()
+                op[j] = pos_tuple_to_int(x.pos)
+
             if x.color == 'b':
                 j = blue.pop()
+                op[j] = pos_tuple_to_int(x.pos)
+
+        for i, x in enumerate(op_ghosts):
             if x.color == 'u':
                 if random() * (len(blue) + len(red)) < len(blue):
                     j = blue.pop()
                 else:
                     j = red.pop()
-            op[j] = pos_tuple_to_int(x.pos)
+                op[j] = pos_tuple_to_int(x.pos)
 
         me_ghosts = v[:8]
         me = [geister.IS_DEAD] * 8
@@ -57,13 +64,13 @@ class GeisterSimulator(object):
         red = [4, 5, 6, 7]
         self.j_to_i = {}  # geister.pyが「青4つ赤4つ」のリストで管理していてclient.pyが「初期配置順」で管理しているギャップを埋めるマップ
         for i, x in enumerate(me_ghosts):
-            if x.color == 'R':
+            if x.color == 'R' or x.color == 'r':
                 j = red.pop()
-            if x.color == 'B':
+            if x.color == 'B' or x.color == 'b':
                 j = blue.pop()
             me[j] = pos_tuple_to_int(x.pos)
             self.j_to_i[j] = i
-        print "me, op:", me, op
+        #print "me, op:", me, op
         g = geister.Game.by_val(0, me, op)
         return self._game_to_state(g)
 

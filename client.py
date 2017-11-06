@@ -236,6 +236,7 @@ def connect_server(ai=None, port=None):
 
         msg = data[4:]
         if len(msg) > 48: msg = msg[:48]
+        print msg
         ghosts = message_to_ghosts(msg)
         move = p.choose_next_move(ghosts)
         msg = "MOV:{}\r\n".format(move_to_str(move))
