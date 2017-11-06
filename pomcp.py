@@ -117,11 +117,28 @@ class GeisterSimulator(object):
         if isinstance(o, geister.View):
             o = self._serialize_o(o)
         if isinstance(o, list):
-            o = "".join(x.to_str() for x in o)
+            o = self._serialize_ghosts(o)
+            #o = "".join(x.to_str() for x in o)
         return (h, tuple(a), o)
 
     def _serialize_o(self, o):
-        return (tuple(o.me), tuple(sorted(o.alive)), o.dead_blue, o.dead_red)
+        return (tuple(sorted(o.alive)), o.dead_blue, o.dead_red)
+
+    def _serialize_ghosts(self, o):
+        op_ghosts = o[8:]
+        dead_blue = 0
+        dead_red = 0
+        op_pos = []
+        for i, x in enumerate(op_ghosts):
+            if x.color == 'r':
+                dead_red += 1
+            if x.color == 'b':
+                dead_blue += 1
+            if x.color == 'u':
+                op_pos.append(pos_tuple_to_int(x.pos))
+        op_pos.sort()
+        return (tuple(op_pos), dead_blue, dead_red)
+
 
 sim = GeisterSimulator(geister.Fastest())
 
@@ -254,7 +271,7 @@ class POMCP(geister.AI):
                 self.prev_history, self.prev_action, view)
             print 'hao', hao
             if tree.has_key(hao):
-                print 'has key'
+                print 'has key in', len(tree)
                 if 1:
                     thao = tree[hao]
                     tree.clear()
@@ -264,7 +281,7 @@ class POMCP(geister.AI):
                     self.prev_history = hao
                 a = search(self.prev_history)
             else:
-                print 'no key'
+                print 'no key in', len(tree)  # particles are vanished
                 sim.initial_observation = view
                 tree.clear()
                 self.prev_history = None
@@ -284,6 +301,3 @@ class POMCP(geister.AI):
         print "ret:", ret
         return ret
 
-#print Counter(geister.match(POMCP, geister.Fastest, False) for i in range(100))
-#print Counter(geister.match(geister.FastestP, POMCP, False) for i in range(100))
-#print Counter(geister.match(geister.Random, POMCP, False) for i in range(100))
