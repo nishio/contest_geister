@@ -130,8 +130,16 @@ def occupied_by_my_ghost(pos, mypos):
 
 
 from collections import namedtuple
-Ghost = namedtuple("Ghost", "name pos color")
-
+#Ghost = namedtuple("Ghost", "name pos color")
+class Ghost(object):
+    def __init__(self, name, pos, color):
+        self.name = name
+        self.pos = pos
+        self.color = color
+    def to_str(self):
+        return "%d%d%s" % (self.pos[0], self.pos[1], self.color)
+    def __repr__(self):
+        return repr((self.name, self.pos, self.color))
 TEST_GHOSTS = [Ghost('A', (1, 4), 'R'), Ghost('B', (2, 4), 'R'), Ghost('C', (3, 4), 'R'), Ghost('D', (4, 4), 'R'), Ghost('E', (1, 5), 'B'), Ghost('F', (2, 5), 'B'), Ghost('G', (3, 5), 'B'), Ghost('H', (4, 5), 'B'), Ghost('a', (4, 1), 'u'), Ghost('b', (3, 1), 'u'), Ghost('c', (2, 1), 'u'), Ghost('d', (1, 1), 'u'), Ghost('e', (4, 0), 'u'), Ghost('f', (3, 0), 'u'), Ghost('g', (2, 0), 'u'), Ghost('h', (1, 0), 'u')]
 TEST_MESSAGE = "14R24R34R44R15B25B35B45B41u31u21u11u40u30u20u10u"
 def message_to_ghosts(message):
@@ -440,9 +448,9 @@ def calc_new_pos(pos, direction):
     if direction == 'E':
         return (pos[0] + 1, pos[1])
     if direction == 'W':
-        return (pos[0], pos[1] + 1)
-    if direction == 'S':
         return (pos[0] - 1, pos[1])
+    if direction == 'S':
+        return (pos[0], pos[1] + 1)
     raise AssertionError('not here')
 
 

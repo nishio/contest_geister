@@ -18,7 +18,9 @@ DEPTH_LIMIT = 100
 tree = {}
 gamma = 0.95
 
-
+def pos_tuple_to_int(pos):
+    x, y = pos
+    return y * 6 + x
 
 class GeisterSimulator(object):
     def __init__(self, op_policy=geister.Random()):
@@ -31,12 +33,37 @@ class GeisterSimulator(object):
 
     def sample_from_initial_observation(self):
         v = self.initial_observation
+        op_ghosts = v[8:]
         op = [geister.IS_DEAD] * 8
-        index = [0, 1, 2, 3][:4 - v.dead_blue] + [4, 5, 6, 7][:4 - v.dead_red]
-        shuffle(index)
-        for i, p in zip(index, v.alive):
-            op[i] = p
-        g = geister.Game.by_val(0, v.me, op)
+        blue = [0, 1, 2, 3]
+        red = [4, 5, 6, 7]
+        for i, x in enumerate(op_ghosts):
+            x = op_ghosts[i]
+            if x.color == 'R':
+                j = red.pop()
+            if x.color == 'B':
+                j = blue.pop()
+            if x.color == 'u':
+                if random() * (len(blue) + len(red)) < len(blue):
+                    j = blue.pop()
+                else:
+                    j = red.pop()
+            op[j] = pos_tuple_to_int(x.pos)
+
+        me_ghosts = v[:8]
+        me = [geister.IS_DEAD] * 8
+        blue = [0, 1, 2, 3]
+        red = [4, 5, 6, 7]
+        for i, x in enumerate(me_ghosts):
+            x = op_ghosts[i]
+            if x.color == 'R':
+                j = red.pop()
+            if x.color == 'B':
+                j = blue.pop()
+            me[j] = pos_tuple_to_int(x.pos)
+
+        g = geister.Game.by_val(0, me, op)
+        
         return self._game_to_state(g)
 
     def n_init(self, h, a):
@@ -73,6 +100,8 @@ class GeisterSimulator(object):
     def make_new_history(self, h, a, o):
         if isinstance(o, geister.View):
             o = self._serialize_o(o)
+        if isinstance(o, list):
+            o = "".join(x.to_str() for x in o)
         return (h, tuple(a), o)
 
     def _serialize_o(self, o):
@@ -226,7 +255,19 @@ class POMCP(geister.AI):
                 self.prev_history = None
                 a = search(None)
         self.prev_action = a
-        return a
+
+        target = view[a[0]]
+        direction = a[1]
+        if direction == 1:
+            ret = (target, 'W')
+        if direction == -1:
+            ret = (target, 'E')
+        if direction == -6:
+            ret = (target, 'S')
+        if direction == 6:
+            ret = (target, 'N')
+        print "ret:", ret
+        return ret
 
 #print Counter(geister.match(POMCP, geister.Fastest, False) for i in range(100))
 #print Counter(geister.match(geister.FastestP, POMCP, False) for i in range(100))

@@ -9,14 +9,8 @@ try:
 except:
     profile =  lambda f: f
 
-## mini-geister
-IS_MINI_BOARD = False
-if IS_MINI_BOARD:
-    NUM_GEISTER = 2
-    BOARD_WIDTH = 4
-else:
-    NUM_GEISTER = 8
-    BOARD_WIDTH = 6
+NUM_GEISTER = 8
+BOARD_WIDTH = 6
 
 MAX_POS = BOARD_WIDTH * BOARD_WIDTH - 1
 IS_DEAD = MAX_POS + 1
@@ -32,12 +26,7 @@ EVEN = 'EVEN'
 
 class Game(object):
     def __init__(self):
-        if BOARD_WIDTH == 4:
-            op = [1, 2]
-        elif BOARD_WIDTH == 6:
-            op = [1, 2, 3, 4, 7, 8, 9, 10]
-        else:
-            raise NotImplemented
+        op = [1, 2, 3, 4, 7, 8, 9, 10]
         me = [MAX_POS - pos for pos in op]
         shuffle(op)
         shuffle(me)
