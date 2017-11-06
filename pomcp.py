@@ -15,7 +15,7 @@ try:
 except:
     profile = lambda f:f
 
-TIME_LIMIT = 1  # seconds
+TIME_LIMIT = 9  # seconds
 DEPTH_LIMIT = 100
 tree = {}
 gamma = 0.95
