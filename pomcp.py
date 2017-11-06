@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from time import time
 from random import choice, random, shuffle
 import numpy as np
@@ -38,10 +40,9 @@ class GeisterSimulator(object):
         blue = [0, 1, 2, 3]
         red = [4, 5, 6, 7]
         for i, x in enumerate(op_ghosts):
-            x = op_ghosts[i]
-            if x.color == 'R':
+            if x.color == 'r':
                 j = red.pop()
-            if x.color == 'B':
+            if x.color == 'b':
                 j = blue.pop()
             if x.color == 'u':
                 if random() * (len(blue) + len(red)) < len(blue):
@@ -54,16 +55,16 @@ class GeisterSimulator(object):
         me = [geister.IS_DEAD] * 8
         blue = [0, 1, 2, 3]
         red = [4, 5, 6, 7]
+        self.j_to_i = {}  # geister.pyが「青4つ赤4つ」のリストで管理していてclient.pyが「初期配置順」で管理しているギャップを埋めるマップ
         for i, x in enumerate(me_ghosts):
-            x = op_ghosts[i]
             if x.color == 'R':
                 j = red.pop()
             if x.color == 'B':
                 j = blue.pop()
             me[j] = pos_tuple_to_int(x.pos)
-
+            self.j_to_i[j] = i
+        print "me, op:", me, op
         g = geister.Game.by_val(0, me, op)
-        
         return self._game_to_state(g)
 
     def n_init(self, h, a):
@@ -156,6 +157,7 @@ def search(h):
             s = sim.sample_from_initial_observation()
         else:
             s = sample_from_belief(tree[h].belief)
+        #print "s:", s
         simulate(s, h, 0)
     if 0:
         print "current belief:"
@@ -169,8 +171,6 @@ def search(h):
             total += count
         for x in sorted(stat):
             print "{}: {:.2f}%".format(x, stat[x] * 100.0 / total)
-        #import pdb
-        #pdb.set_trace()
 
     action_index = np.argmax(tree[h].action_value)
     return tree[h].actions[action_index]
@@ -256,16 +256,16 @@ class POMCP(geister.AI):
                 a = search(None)
         self.prev_action = a
 
-        target = view[a[0]]
+        target = view[sim.j_to_i[a[0]]]
         direction = a[1]
         if direction == 1:
-            ret = (target, 'W')
-        if direction == -1:
             ret = (target, 'E')
+        if direction == -1:
+            ret = (target, 'W')
         if direction == -6:
-            ret = (target, 'S')
-        if direction == 6:
             ret = (target, 'N')
+        if direction == 6:
+            ret = (target, 'S')
         print "ret:", ret
         return ret
 
