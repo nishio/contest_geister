@@ -422,8 +422,6 @@ class PartiallyObservableAI(AI):
         return self.core.choice(ghosts)
 
 
-DefaultAI = PartiallyObservableAI
-Sub = FastestColorblindAI  # substitute player
 
 class EpsilonFastestAI(AI):
     "epsilon greedy"
@@ -594,6 +592,8 @@ class HumanPlayer(AI):
         r2 = dict(zip('KLHJNEWS', 'NEWSNEWS'))[move[1].upper()]
         return (r1, r2)
 
+DefaultAI = PartiallyObservableAI
+Sub = FastestColorblindAI  # substitute player
 
 if __name__ == "__main__":
     if args.first:

@@ -2,7 +2,7 @@
 from random import choice, shuffle, seed, random
 from copy import copy
 from collections import defaultdict, Counter
-seed(1234)
+#seed(1234)
 
 try:
     profile
@@ -180,7 +180,21 @@ def find_possible_move(view):
     return ret
 
 
+def find_kiki(view):
+    "相手が次に動きうるマス(つまりそこに動かすと取られうるところ)を返す"
+    ret = []
+    for i, pos in enumerate(view.alive):
+        x, y = to_xy(pos)
+        if y != 0:
+            ret.append(pos + UP)
+        if y !=  BOARD_WIDTH - 1:
+            ret.append(pos + DOWN)
+        if x != 0:
+           ret.append(pos + LEFT)
+        if x != BOARD_WIDTH - 1:
+           ret.append(pos + RIGHT)
 
+    return ret
 
 
 
@@ -238,6 +252,28 @@ class FastestP(AI):
         if random() < self.p:
             return choice(moves)
         return Fastest().choice(view)
+
+
+class ColorlessFastest(AI):
+    "自分のゴールインまでの手数を短くする/色無関係"
+    def choice(self, view):
+        moves = find_possible_move(view)
+        if moves[0][1] == WIN: return moves[0]
+        scored_moves = defaultdict(list)
+        def calc_dist(pos):
+            x, y = to_xy(pos)
+            return y + min(x, 3 - x)
+
+        for move in moves:
+            # 勝てるなら勝つ
+            if move[1] == WIN: return move
+            i, d = move
+            m = view.me[:]
+            m[i] += d
+            dist = min(calc_dist(pos) for pos in m)
+            scored_moves[dist].append(move)
+        #print scored_moves
+        return choice(scored_moves[min(scored_moves)])
 
 
 MAX_TURNS = 300
@@ -381,4 +417,119 @@ def random_playout(g, side):
 
     return EVEN
 
+
+class Ichi(AI):
+    "FastestじゃPOMCPに食わすにしてもあんまりなのでもう少しましなやつ"
+    def choice(self, view):
+        moves = find_possible_move(view)
+        if moves[0][1] == WIN: return moves[0]
+        kiki = find_kiki(view)
+        scored_moves = defaultdict(list)
+        def calc_dist(pos):
+            x, y = to_xy(pos)
+            return y + min(x, 3 - x)
+
+        ops = view.alive
+        for move in moves:
+            # 勝てるなら勝つ
+            if move[1] == WIN: return move
+            i, d = move
+            is_blue = (i < 4)
+            score = 0
+            pos = view.me[i]
+            x, y = to_xy(pos)
+            dest = pos + d
+
+            # もし行先に敵コマがいて、かつそのコマに利きがない(ただ取り)
+            if dest in ops and dest not in kiki:
+                # もし今までに取った赤の方が多ければ
+                if view.dead_red > view.dead_blue:
+                    # 赤を取らせる戦略を警戒する
+                    # ゴールに近いときだけ取る
+                    ox, oy = to_xy(pos)
+                    d = min(ox, 5 - ox) + (5 - oy)
+                    score += {0: 100, 1: 60, 2: 30}.get(d, 0)
+                else:
+                    score += 100
+
+            # もし現在の自分に利きがあり、移動先に利きがない
+            if pos in kiki and dest not in kiki:
+                score += 90
+
+            # もし移動先に利きがなく、前進である
+            if dest not in kiki and d == UP:
+                score += 80
+
+            # もし移動先に利きがなく、ゴールに近づく左右動きである
+            if dest not in kiki and (d == LEFT and x < 3) :
+                score += 70
+            if dest not in kiki and (d == RIGHT and x >= 3) :
+                score += 70
+
+            if not(is_blue):
+                score -= 2
+
+            # 上記好ましい動きができない場合の、あえて言うならこう、という動き
+            # もし行先に敵コマがいる(利きはあるので交換になる)
+            #if dest in ops and dest in kiki:
+            #    score += 30
+
+            # 前進である
+            if dest in kiki and d == UP:
+                score += 20
+
+            # ゴールに近づく左右動きである
+            if dest in kiki and (d == LEFT and x < 3) :
+                score += 10
+            if dest in kiki and (d == RIGHT and x >= 3) :
+                score += 10
+
+            # 取られない動きである
+            if dest not in ops:
+                score += 2
+            # 端を避ける
+            dx, dy = to_xy(dest)
+            if dx == 0 or dx == 5 or dy == 0:
+                score += 1
+
+            score += random() * 10
+            scored_moves[score].append(move)
+
+        return choice(scored_moves[max(scored_moves)])
+
 #print Counter(match(Montecarlo, Random, False) for i in range(1))
+
+def allmatch(N=100):
+    """
+    print "Fastest"
+    print Counter(match(Ichi, Fastest, False) for i in range(N))
+    print Counter(match(Fastest, Ichi, False) for i in range(N))
+    print "Random"
+    print Counter(match(Ichi, Random, False) for i in range(N))
+    print Counter(match(Random, Ichi, False) for i in range(N))
+    print "ColerlessFastest"
+    print Counter(match(Ichi, ColorlessFastest, False) for i in range(N))
+    print Counter(match(ColorlessFastest, Ichi, False) for i in range(N))
+    """
+    from pomcp import POMCP
+    print "Fastest"
+    print Counter(match(POMCP, Fastest, False) for i in range(N))
+    print Counter(match(Fastest, POMCP, False) for i in range(N))
+    print "Random"
+    print Counter(match(POMCP, Random, False) for i in range(N))
+    print Counter(match(Random, POMCP, False) for i in range(N))
+    print "ColerlessFastest"
+    print Counter(match(POMCP, ColorlessFastest, False) for i in range(N))
+    print Counter(match(ColorlessFastest, POMCP, False) for i in range(N))
+    print "ColerlessFastest"
+    print Counter(match(POMCP, Ichi, False) for i in range(N))
+    print Counter(match(Ichi, POMCP, False) for i in range(N))
+
+
+
+if __name__ == "__main__":
+    allmatch(1000)
+    if 0:
+        while 1:
+            v = match(Ichi, Random, True)
+            if v == "LOSE": break

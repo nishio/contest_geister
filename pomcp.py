@@ -140,8 +140,6 @@ class GeisterSimulator(object):
         return (tuple(op_pos), dead_blue, dead_red)
 
 
-sim = GeisterSimulator(geister.Fastest())
-
 class TreeNode(object):
     def __init__(self, h, s):
         self.belief = defaultdict(int)
@@ -191,7 +189,7 @@ def search(h):
             s = sample_from_belief(tree[h].belief)
         #print "s:", s
         simulate(s, h, 0)
-    if 0:
+    if 1:
         print "current belief:"
         #file("belief", "a").write("{}\n\n".format(tree[h].belief))
         stat = defaultdict(int)
@@ -201,9 +199,16 @@ def search(h):
                 if x == 36: continue  # dead
                 stat[x] += count
             total += count
-        for x in sorted(stat):
-            print "{}: {:.2f}%".format(x, stat[x] * 100.0 / total)
-
+        #for x in sorted(stat):
+        #    print "{},{}: {:.2f}%".format(
+        #        5 - x % 6, 5 - x / 6,
+        #        stat[x] * 100.0 / total)
+        buf = [["   __"] * 6 for i in range(6)]
+        for x in stat:
+            buf[5 - x / 6][5 - x % 6] = (
+                "   %2d" % (stat[x] * 99.9 // total))
+        print "\n\n".join(
+            ("".join(line) for line in buf))
     action_index = np.argmax(tree[h].action_value)
     return tree[h].actions[action_index]
 
@@ -255,10 +260,63 @@ def show(h):
     print Counter(tree[h].belief)
     print tree[h].show_actions()
 
+class WrapGeisterAI(geister.AI):
+    def __init__(self, ai):
+        self.ai = ai
+
+    def choice(self, view):
+        op_ghosts = view[8:]
+        dead_red = 0
+        dead_blue = 0
+        alive = []
+        for i, x in enumerate(op_ghosts):
+            if x.color == 'r':
+                dead_red += 1
+            if x.color == 'b':
+                dead_blue += 1
+            if x.color == 'u':
+                alive.append(pos_tuple_to_int(x.pos))
+
+        me_ghosts = view[:8]
+        me = [geister.IS_DEAD] * 8
+        blue = [0, 1, 2, 3]
+        red = [4, 5, 6, 7]
+        self.j_to_i = {}  # geister.pyが「青4つ赤4つ」のリストで管理していてclient.pyが「初期配置順」で管理しているギャップを埋めるマップ
+        for i, x in enumerate(me_ghosts):
+            if x.color == 'R' or x.color == 'r':
+                j = red.pop()
+            if x.color == 'B' or x.color == 'b':
+                j = blue.pop()
+            me[j] = pos_tuple_to_int(x.pos)
+            self.j_to_i[j] = i
+
+        v = geister.View(None, me, alive, dead_blue, dead_red)
+        print v
+        a = self.ai.choice(v)
+        target = view[self.j_to_i[a[0]]]
+        direction = a[1]
+        if direction == 1:
+            ret = (target, 'E')
+        if direction == -1:
+            ret = (target, 'W')
+        if direction == -6:
+            ret = (target, 'N')
+        if direction == 6:
+            ret = (target, 'S')
+
+        print ret
+        return ret
 
 class POMCP(geister.AI):
-    def __init__(self):
+    def __init__(self, mentalmodel=geister.Ichi()):
+        global sim
         tree.clear()
+        #sim = GeisterSimulator(geister.FastestP(0.1))
+        sim = GeisterSimulator(mentalmodel)
+
+
+        #self.inner_policy = WrapGeisterAI(geister.Ichi())
+
     def choice(self, view):
         if not tree:
             # first time
