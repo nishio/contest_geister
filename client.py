@@ -592,6 +592,19 @@ class HumanPlayer(AI):
         r2 = dict(zip('KLHJNEWS', 'NEWSNEWS'))[move[1].upper()]
         return (r1, r2)
 
+
+class Ichi(AI):
+    def choose_red_ghosts(self):
+        from geister import Ichi as _Ichi
+        from pomcp import WrapGeisterAI
+        self.core = WrapGeisterAI(_Ichi())
+
+        reds = choose_four_red_ghosts_randomly()
+        return reds
+
+    def choose_next_move(self, ghosts):
+        return self.core.choice(ghosts)
+
 DefaultAI = PartiallyObservableAI
 Sub = FastestColorblindAI  # substitute player
 

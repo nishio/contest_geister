@@ -311,7 +311,7 @@ class POMCP(geister.AI):
     def __init__(self, mentalmodel=geister.Ichi()):
         global sim
         tree.clear()
-        #sim = GeisterSimulator(geister.FastestP(0.1))
+        #sim = GeisterSimulator(geister.Fastest())
         sim = GeisterSimulator(mentalmodel)
 
 

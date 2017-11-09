@@ -492,7 +492,7 @@ class Ichi(AI):
             if dx == 0 or dx == 5 or dy == 0:
                 score += 1
 
-            score += random() * 10
+            score += random() * 50
             scored_moves[score].append(move)
 
         return choice(scored_moves[max(scored_moves)])
@@ -511,7 +511,7 @@ def allmatch(N=100):
     print Counter(match(Ichi, ColorlessFastest, False) for i in range(N))
     print Counter(match(ColorlessFastest, Ichi, False) for i in range(N))
     """
-    from pomcp import POMCP
+    from original_pomcp import POMCP
     print "Fastest"
     print Counter(match(POMCP, Fastest, False) for i in range(N))
     print Counter(match(Fastest, POMCP, False) for i in range(N))
@@ -521,14 +521,14 @@ def allmatch(N=100):
     print "ColerlessFastest"
     print Counter(match(POMCP, ColorlessFastest, False) for i in range(N))
     print Counter(match(ColorlessFastest, POMCP, False) for i in range(N))
-    print "ColerlessFastest"
+    print "Ichi"
     print Counter(match(POMCP, Ichi, False) for i in range(N))
     print Counter(match(Ichi, POMCP, False) for i in range(N))
 
 
 
 if __name__ == "__main__":
-    allmatch(1000)
+    allmatch(10)
     if 0:
         while 1:
             v = match(Ichi, Random, True)
